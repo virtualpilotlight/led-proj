@@ -7,7 +7,7 @@
 
 #define LED_COUNT   8   // number of total LEDs 
 
-#define NUM_LEDS    3   // how many to light up
+#define NUM_LEDS    5   // how many to light up
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -116,20 +116,35 @@ void setColors(int litPixels[], int colorSet) {
     Serial.print("in for loop: ");
     Serial.print(litPixels[i]);
     Serial.println("");
-    int red = allColorSets [colorSet][i][0];         
-    int green = allColorSets [colorSet][i][1];
-    int blue = allColorSets [colorSet][i][2];
+    long red = allColorSets [colorSet][i % 3][0];         
+    long green = allColorSets [colorSet][i % 3][1];
+    long blue = allColorSets [colorSet][i  % 3][2];
     //strip.setPixelColor(litPixels[i], red, green, blue);
+
+    long redNow = red;
+    long greenNow = green;
+    long blueNow = blue;
     
-    for (int n = 255; n > 0; n--) {
-      red = (red * n) / 255;
-      green = (green * n) / 255;
-      blue = (blue * n) / 255;
-      strip.setPixelColor(litPixels[i], red, green, blue);
+    for (long n = 0; n <= 255; n++) {
+      redNow = (red * n) / 255;
+      greenNow = (green * n) / 255;
+      blueNow = (blue * n) / 255;
+      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
       strip.show();
-      delay(50);
+      delay(10);
     }
 
+    delay(50);
+
+    for (long n = 255; n > 0; n--) {
+      redNow = (red * n) / 255;
+      greenNow = (green * n) / 255;
+      blueNow = (blue * n) / 255;
+      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
+      strip.show();
+      delay(10);
+    }
+  
 /*
    for (int r = 0; r < red; r++) {
       strip.setPixelColor(litPixels[i], r, 0, 0);
@@ -151,7 +166,7 @@ void setColors(int litPixels[], int colorSet) {
       delay(5);
     }
     Serial.print("blue on. ");
-  */ 
+*/ 
   
   }
  
