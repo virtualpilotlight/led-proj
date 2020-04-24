@@ -24,6 +24,8 @@ int allColorSets [4][3][3] = {
 #define SECONDARY   2
 #define COOL        3
 
+unsigned long time;
+
 void setup() {
   // put your setup code here, to run once:
   strip.begin();              // turn the strip on
@@ -39,54 +41,29 @@ void setup() {
   
 }
 
+unsigned long timeSinceRando = millis();
+
 void loop() {
   // put your main code here, to run repeatedly:
 
+  time = millis();
+
   int litPixels [NUM_LEDS];     // an array that holds the LEDs to be lit in this case 3 
 
-  randomPixels(litPixels);
+  if (time - timeSinceRando > 5000) {
 
-  while (dupePixels(litPixels) == true) {
     randomPixels(litPixels);
-  }
-  
-  allLit(0, 0, 0);                                   
 
-  setColors(litPixels, SECONDARY);
-  
-  delay(500);
+    while (dupePixels(litPixels) == true) {
+      randomPixels(litPixels);
+    }
+    timeSinceRando = time;
+  }  
+
+  setColorsByTime(litPixels, SECONDARY);
+
 }
 
-/* int maxBrightness = 25;
-
-     for (int i = 0; i <= maxBrightness; i++){
-      strip.setBrightness(i);
-      strip.setPixelColor(randoPixel, randoRed, randoGreen, randoBlue);
-      strip.show();
-      delay(speed);
-     }
-
-     for (int i = maxBrightness; i >= 0; i--){
-      strip.setBrightness(i);
-      strip.setPixelColor(randoPixel, randoRed, randoGreen, randoBlue);
-      strip.show();
-      delay(speed);
-     }
-
-
-
-void fadeOn(int lit Pixels[], int red, int green, int blue) {
-  for (int r = 0; r < red; r++) {
-     strip.setPixelColor(litPixels[i], r, 0, 0);
-  }
-  for (int g = 0; g < green; g++) {
-     strip.setPixelColor(litPixels[i], red, g, 0);
-  }
-  for (int b = 0; b < blue; b++) {
-     strip.setPixelColor(litPixels[i], red, green, b);
-  }
-}
-*/ 
 
 void randomPixels(int litPixels[]) {
   for (int i = 0; i < NUM_LEDS; i++ ){       
@@ -108,6 +85,33 @@ bool dupePixels(int litPixels[]) {
     }
   }
   return false;
+}
+
+void setColorsByTime(int litPixels[], int colorSet) {
+  Serial.println("in set colors");
+  for (int i = 0; i < NUM_LEDS; i++) {       
+    Serial.print("in for loop: ");
+    Serial.print(litPixels[i]);
+    Serial.println("");
+    long red = allColorSets [colorSet][i % 3][0];         
+    long green = allColorSets [colorSet][i % 3][1];
+    long blue = allColorSets [colorSet][i  % 3][2];
+    //strip.setPixelColor(litPixels[i], red, green, blue);
+
+    long redNow = red;
+    long greenNow = green;
+    long blueNow = blue;
+
+    
+    int n = time % 255;
+      redNow = (red * n) / 255;
+      greenNow = (green * n) / 255;
+      blueNow = (blue * n) / 255;
+      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
+      strip.show();
+  
+  }
+ 
 }
 
 void setColors(int litPixels[], int colorSet) {
@@ -133,7 +137,7 @@ void setColors(int litPixels[], int colorSet) {
       strip.show();
       delay(10);
     }
-
+ 
     delay(50);
 
     for (long n = 255; n > 0; n--) {
@@ -144,37 +148,10 @@ void setColors(int litPixels[], int colorSet) {
       strip.show();
       delay(10);
     }
-  
-/*
-   for (int r = 0; r < red; r++) {
-      strip.setPixelColor(litPixels[i], r, 0, 0);
-      strip.show();
-      delay(5);
-    }
-    Serial.print("red on. "); 
-    
-    for (int g = 0; g < green; g++) {
-      strip.setPixelColor(litPixels[i], red, g, 0);
-      strip.show();
-      delay(5);
-    }
-    Serial.print("green on. ");
-    
-    for (int b = 0; b < blue; b++) {
-      strip.setPixelColor(litPixels[i], red, green, b);
-      strip.show();
-      delay(5);
-    }
-    Serial.print("blue on. ");
-*/ 
-  
-  }
- 
+  } 
 }
 
-void redFadeOn(){
-  
-}
+
 
 void allLit(int R, int G, int B) {
    for (int i = 0; i <= LED_COUNT; i++){
