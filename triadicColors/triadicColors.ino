@@ -144,43 +144,6 @@ void fadeDown(int litPixels[], int colorSet, int fadeAmount) {
  
 }
 
-void setColors(int litPixels[], int colorSet) {
-  Serial.println("in set colors");
-  for (int i = 0; i < NUM_LEDS; i++) {       
-    Serial.print("in for loop: ");
-    Serial.print(litPixels[i]);
-    Serial.println("");
-    long red = allColorSets [colorSet][i % 3][0];         
-    long green = allColorSets [colorSet][i % 3][1];
-    long blue = allColorSets [colorSet][i  % 3][2];
-    //strip.setPixelColor(litPixels[i], red, green, blue);
-
-    long redNow = red;
-    long greenNow = green;
-    long blueNow = blue;
-    
-    for (long n = 0; n <= 255; n++) {
-      redNow = (red * n) / 255;
-      greenNow = (green * n) / 255;
-      blueNow = (blue * n) / 255;
-      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
-      strip.show();
-      delay(10);
-    }
- 
-    delay(50);
-
-    for (long n = 255; n > 0; n--) {
-      redNow = (red * n) / 255;
-      greenNow = (green * n) / 255;
-      blueNow = (blue * n) / 255;
-      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
-      strip.show();
-      delay(10);
-    }
-  } 
-}
-
 
 
 void allLit(int R, int G, int B) {
