@@ -7,7 +7,7 @@
 
 #define LED_COUNT   8   // number of total LEDs 
 
-#define NUM_LEDS    5   // how many to light up
+#define NUM_LEDS    6   // how many to light up
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -48,9 +48,11 @@ void loop() {
 
   time = millis();
 
+  unsigned long ledClock = time - timeSinceRando;
+
   int litPixels [NUM_LEDS];     // an array that holds the LEDs to be lit in this case 3 
 
-  if (time - timeSinceRando > 5000) {
+  if (ledClock > 5000) {
 
     randomPixels(litPixels);
 
@@ -60,7 +62,13 @@ void loop() {
     timeSinceRando = time;
   }  
 
-  setColorsByTime(litPixels, SECONDARY);
+  if (ledClock < 2500) {
+    fadeUp(litPixels, SECONDARY, ( ledClock * 255)  / 2500);
+  }
+  else {
+    fadeDown(litPixels, SECONDARY, (( ledClock * 255)  / 2500) - 255);
+  }
+
 
 }
 
@@ -87,26 +95,48 @@ bool dupePixels(int litPixels[]) {
   return false;
 }
 
-void setColorsByTime(int litPixels[], int colorSet) {
-  Serial.println("in set colors");
+void fadeUp(int litPixels[], int colorSet, int fadeAmount) {
+  Serial.println("in fade up");
+  Serial.println(fadeAmount);
   for (int i = 0; i < NUM_LEDS; i++) {       
-    Serial.print("in for loop: ");
-    Serial.print(litPixels[i]);
-    Serial.println("");
+
     long red = allColorSets [colorSet][i % 3][0];         
     long green = allColorSets [colorSet][i % 3][1];
     long blue = allColorSets [colorSet][i  % 3][2];
-    //strip.setPixelColor(litPixels[i], red, green, blue);
+
+    long redNow = red;
+    long greenNow = green;
+    long blueNow = blue;
+    
+    int n = fadeAmount % 256;
+      redNow = (red * n) / 256;
+      greenNow = (green * n) / 256;
+      blueNow = (blue * n) / 256;
+      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
+      strip.show();
+  }
+}
+
+
+void fadeDown(int litPixels[], int colorSet, int fadeAmount) {
+  Serial.println("in fade down");
+  Serial.println(fadeAmount);
+  
+  for (int i = 0; i < NUM_LEDS; i++) {       
+
+    long red = allColorSets [colorSet][i % 3][0];         
+    long green = allColorSets [colorSet][i % 3][1];
+    long blue = allColorSets [colorSet][i  % 3][2];
 
     long redNow = red;
     long greenNow = green;
     long blueNow = blue;
 
     
-    int n = time % 255;
-      redNow = (red * n) / 255;
-      greenNow = (green * n) / 255;
-      blueNow = (blue * n) / 255;
+    int n = 255 - (fadeAmount % 256);
+      redNow = (red * n) / 256;
+      greenNow = (green * n) / 256;
+      blueNow = (blue * n) / 256;
       strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
       strip.show();
   
