@@ -7,7 +7,7 @@
 
 #define LED_COUNT   8   // number of total LEDs 
 
-#define NUM_LEDS    6   // how many to light up
+#define NUM_LEDS    3   // how many to light up
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -26,7 +26,7 @@ int allColorSets [4][3][3] = {
 
 #define MAX_BRIGHT  256
 
-unsigned long time;  // creats an unsigned long, a non negative number upto over 4 billion {0 to (2^32)-1}
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -43,13 +43,15 @@ void setup() {
 }
 
 unsigned long timeSinceRando = millis();  // millis is the amount of milliseconds since the chip started running the current program, resets about every 50 days. 
+unsigned long altTime = millis();  // creats an unsigned long, a non negative number upto over 4 billion {0 to (2^32)-1}
+unsigned long ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
 
 void loop() {
   // put your main code here, to run repeatedly:
 
-  time = millis();  // time is assigned millis
+  altTime = millis();  // time is assigned millis
 
-  unsigned long ledClock = time - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
+  ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
 
   int litPixels [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
 
@@ -62,16 +64,11 @@ void loop() {
       randomPixels(litPixels);
     }
     
-    timeSinceRando = time;    //  sets timeSinceRando to time
-  }  
-/*
-  if (ledClock < 2500) {    // if ledClock is less than 2500 fade up else fade down
-    fadeUp(litPixels, SECONDARY, ( ledClock * (MAX_BRIGHT - 1))  / 2500);
+    timeSinceRando = altTime;    //  sets timeSinceRando to time
   }
-  else {
-    fadeDown(litPixels, SECONDARY, (( ledClock * (MAX_BRIGHT - 1))  / 2500) - (MAX_BRIGHT - 1));
-  }
-*/
+
+  fade(litPixels, SECONDARY);
+
 }
 
 // gives litPixels a random of 0 to LED_COUNT with the index of i for NUM_LEDS
@@ -99,9 +96,8 @@ bool dupePixels(int litPixels[]) {
 }
 
 // new fade func doesn't work since ledClock isn't declared in scope, doesn't compile.  
-void fade(int litPixels[], int colorSet, int fadeAmount) {
-  Serial.println("in fade up");
-  Serial.println(fadeAmount);
+void fade(int litPixels[], int colorSet) {
+  Serial.println("in fade");
   for (int i = 0; i < NUM_LEDS; i++) {       
 
     long red = allColorSets [colorSet][i % 3][0];         
@@ -112,8 +108,10 @@ void fade(int litPixels[], int colorSet, int fadeAmount) {
     long greenNow = green;
     long blueNow = blue;
 
+    long brightness = ( ledClock * (MAX_BRIGHT - 1))  / 2500;
+
     if (ledClock < 2500) {
-      int n = fadeAmount % MAX_BRIGHT;
+      int n = brightness % MAX_BRIGHT;
       redNow = (red * n) / MAX_BRIGHT;
       greenNow = (green * n) / MAX_BRIGHT;
       blueNow = (blue * n) / MAX_BRIGHT;
@@ -121,7 +119,7 @@ void fade(int litPixels[], int colorSet, int fadeAmount) {
       strip.show();
     }
     else{
-      int n = (MAX_BRIGHT - 1) - (fadeAmount % MAX_BRIGHT);
+      int n = (MAX_BRIGHT - 1) - (brightness - (MAX_BRIGHT - 1)) % MAX_BRIGHT;
       redNow = (red * n) / MAX_BRIGHT;
       greenNow = (green * n) / MAX_BRIGHT;
       blueNow = (blue * n) / MAX_BRIGHT;
@@ -131,58 +129,6 @@ void fade(int litPixels[], int colorSet, int fadeAmount) {
   }
 }
 
-/*
-
-void fadeUp(int litPixels[], int colorSet, int fadeAmount) {
-  Serial.println("in fade up");
-  Serial.println(fadeAmount);
-  for (int i = 0; i < NUM_LEDS; i++) {       
-
-    long red = allColorSets [colorSet][i % 3][0];         
-    long green = allColorSets [colorSet][i % 3][1];
-    long blue = allColorSets [colorSet][i  % 3][2];
-
-    long redNow = red;
-    long greenNow = green;
-    long blueNow = blue;
-    
-    int n = fadeAmount % MAX_BRIGHT;
-      redNow = (red * n) / MAX_BRIGHT;
-      greenNow = (green * n) / MAX_BRIGHT;
-      blueNow = (blue * n) / MAX_BRIGHT;
-      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
-      strip.show();
-  }
-}
-
-
-void fadeDown(int litPixels[], int colorSet, int fadeAmount) {
-  Serial.println("in fade down");
-  Serial.println(fadeAmount);
-  
-  for (int i = 0; i < NUM_LEDS; i++) {       
-
-    long red = allColorSets [colorSet][i % 3][0];         
-    long green = allColorSets [colorSet][i % 3][1];
-    long blue = allColorSets [colorSet][i  % 3][2];
-
-    long redNow = red;
-    long greenNow = green;
-    long blueNow = blue;
-
-    
-    int n = (MAX_BRIGHT - 1) - (fadeAmount % MAX_BRIGHT);
-      redNow = (red * n) / MAX_BRIGHT;
-      greenNow = (green * n) / MAX_BRIGHT;
-      blueNow = (blue * n) / MAX_BRIGHT;
-      strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
-      strip.show();
-  
-  }
- 
-}
-
-*/
 
 void allLit(int R, int G, int B) {
    for (int i = 0; i <= LED_COUNT; i++){
