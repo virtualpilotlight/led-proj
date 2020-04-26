@@ -26,7 +26,7 @@ int allColorSets [4][3][3] = {
 
 #define MAX_BRIGHT  256
 
-
+#define SPEED       5000
 
 void setup() {
   // put your setup code here, to run once:
@@ -56,7 +56,7 @@ void loop() {
   int litPixels [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
 
 
-  if (ledClock > 5000) {   // if ledClock is greater than 5k re-random and resets the random clock
+  if (ledClock > SPEED * 2) {   // if ledClock is greater than 5k re-random and resets the random clock
 
     randomPixels(litPixels);    
 
@@ -108,9 +108,9 @@ void fade(int litPixels[], int colorSet) {
     long greenNow = green;
     long blueNow = blue;
 
-    long brightness = ( ledClock * (MAX_BRIGHT - 1))  / 2500;
+    long brightness = ( ledClock * (MAX_BRIGHT - 1))  / SPEED;
 
-    if (ledClock < 2500) {
+    if (ledClock < SPEED) {
       int n = brightness % MAX_BRIGHT;
       redNow = (red * n) / MAX_BRIGHT;
       greenNow = (green * n) / MAX_BRIGHT;
