@@ -20,13 +20,13 @@ int allColorSets [4][3][3] = {
 };
 
 #define PRIMARY     0
-#define WARM        1
+#define WILD        1
 #define SECONDARY   2
-#define COOL        3
+#define PASTEL      3
 
 #define MAX_BRIGHT  256
 
-#define SPEED       5000
+#define SPEED       1000  // number of milliseconds for fade up and down, smaller is faster
 
 void setup() {
   // put your setup code here, to run once:
@@ -55,6 +55,7 @@ void loop() {
 
   int litPixels [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
 
+  int randoColor;
 
   if (ledClock > SPEED * 2) {   // if ledClock is greater than 5k re-random and resets the random clock
 
@@ -64,10 +65,12 @@ void loop() {
       randomPixels(litPixels);
     }
     
-    timeSinceRando = altTime;    //  sets timeSinceRando to time
-  }
+    timeSinceRando = altTime;    //  sets timeSinceRando to altTime
 
-  fade(litPixels, SECONDARY);
+    randoColor = random(0, 4);
+  }
+  
+  fade(litPixels, randoColor);
 
 }
 
@@ -95,7 +98,7 @@ bool dupePixels(int litPixels[]) {
   return false;
 }
 
-// new fade func doesn't work since ledClock isn't declared in scope, doesn't compile.  
+
 void fade(int litPixels[], int colorSet) {
   Serial.println("in fade");
   for (int i = 0; i < NUM_LEDS; i++) {       
