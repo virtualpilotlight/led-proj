@@ -12,21 +12,23 @@
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 //there are 4 color sets of 3 colors each, each color has an RGB value. 
-int allColorSets [4][3][3] = { 
+int allColorSets [5][3][3] = { 
   { { 255, 0, 0}, { 255, 250, 0}, { 0, 0, 255} }, // Red, Yellow, Blue
   { { 255, 69, 0}, { 173, 255, 47}, { 138, 43, 226} }, // Red-orange, yellow-green, blue violet
   { { 255, 100, 0}, { 0, 128, 0}, { 148, 0, 211} }, // Orange, Green, Violet
   { { 255, 215, 0}, { 32, 178, 170}, { 199, 21, 133} }, // yellow-orange, blue-green, Red-violet
+  { { 0, 0, 0}, { 0, 0, 0}, { 0, 0, 0} }  // no color 
 };
 
 #define PRIMARY     0
 #define WILD        1
 #define SECONDARY   2
 #define PASTEL      3
+#define DARK        4
 
 #define MAX_BRIGHT  256
 
-#define SPEED       1000  // number of milliseconds for fade up and down, smaller is faster
+#define SPEED       2000  // number of milliseconds for fade up and down, smaller is faster
 
 void setup() {
   // put your setup code here, to run once:
@@ -53,9 +55,9 @@ void loop() {
 
   ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
 
-  int litPixels [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
+  int litPixels[]  = { 0, 1, 2};             // [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
 
-  int randoColor;
+  /* int randoColor;
 
   if (ledClock > SPEED * 2) {   // if ledClock is greater than 5k re-random and resets the random clock
 
@@ -67,11 +69,13 @@ void loop() {
     
     timeSinceRando = altTime;    //  sets timeSinceRando to altTime
 
-    randoColor = random(0, 4);
+    randoColor = random(0, 4);  // randoColor gets a number 0 -3
   }
   
-  fade(litPixels, randoColor);
-
+  fade(litPixels, randoColor);  // fade uses litPixels and randoColor to fade on and off
+  */
+  
+  colorFade(litPixels, PRIMARY, SECONDARY);
 }
 
 // gives litPixels a random of 0 to LED_COUNT with the index of i for NUM_LEDS
@@ -97,7 +101,6 @@ bool dupePixels(int litPixels[]) {
   }
   return false;
 }
-
 
 void fade(int litPixels[], int colorSet) {
   Serial.println("in fade");
@@ -132,6 +135,29 @@ void fade(int litPixels[], int colorSet) {
   }
 }
 
+void colorFade(int litPixels[], int firstColor, int secondColor){
+  Serial.println("in color fade");
+  for (int i = 0; i < NUM_LEDS; i++) {       
+
+    long red1 = allColorSets [firstColor][i % 3][0];         
+    long green1 = allColorSets [firstColor][i % 3][1];
+    long blue1 = allColorSets [firstColor][i  % 3][2];
+
+    long red2 = allColorSets [secondColor][i % 3][0];         
+    long green2 = allColorSets [secondColor][i % 3][1];
+    long blue2 = allColorSets [secondColor][i  % 3][2];
+
+    long weight = ( ledClock * (MAX_BRIGHT - 1))  / SPEED;
+
+    long redNow = ((red1 * weight) / 255) + ((red2 * (255 - weight)) / 255) ;
+    long greenNow = ((green1 * weight) / 255) + ((green2 * (255 - weight)) / 255) ;
+    long blueNow = ((blue1 * weight) / 255) + ((blue2 * (255 - weight)) / 255) ;
+
+    strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
+    strip.show();
+  }
+  
+}
 
 void allLit(int R, int G, int B) {
    for (int i = 0; i <= LED_COUNT; i++){
