@@ -7,7 +7,7 @@
 
 #define LED_COUNT   8   // number of total LEDs 
 
-#define NUM_LEDS    3   // how many to light up
+#define NUM_LEDS    8   // how many to light up
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
@@ -28,7 +28,7 @@ int allColorSets [5][3][3] = {
 
 #define MAX_BRIGHT  256
 
-#define SPEED       2000  // number of milliseconds for fade up and down, smaller is faster
+#define SPEED       1000  // number of milliseconds for fade up and down, smaller is faster
 
 void setup() {
   // put your setup code here, to run once:
@@ -55,7 +55,7 @@ void loop() {
 
   ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
 
-  int litPixels[]  = { 0, 1, 2};             // [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
+  int litPixels[]  = { 0, 1, 2, 3, 4, 5, 6, 7};             // [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
 
   /* int randoColor;
 
@@ -74,8 +74,14 @@ void loop() {
   
   fade(litPixels, randoColor);  // fade uses litPixels and randoColor to fade on and off
   */
+  for (int i = 0; i < NUM_LEDS; i++ ){
+    singleFade(litPixels[i], SECONDARY, 1, PASTEL, 2, (i * 100) );
+  }
   
-  colorFade(litPixels, PRIMARY, SECONDARY);
+  
+  //colorFade(litPixels, PRIMARY, SECONDARY);
+
+  
 }
 
 // gives litPixels a random of 0 to LED_COUNT with the index of i for NUM_LEDS
@@ -157,6 +163,26 @@ void colorFade(int litPixels[], int firstColor, int secondColor){
     strip.show();
   }
   
+}
+
+void singleFade(int pixel, int setOne, int colorOne, int setTwo, int colorTwo, int offset) {
+  
+  long redOne = allColorSets [setOne][colorOne][0];         
+    long greenOne = allColorSets [setOne][colorOne][1];
+    long blueOne = allColorSets [setOne][colorOne][2];
+
+    long redTwo = allColorSets [setTwo][colorTwo][0];         
+    long greenTwo = allColorSets [setTwo][colorTwo][1];
+    long blueTwo = allColorSets [setTwo][colorTwo][2];
+
+    long weight = ( (ledClock + offset) * (MAX_BRIGHT - 1) )  / SPEED;
+
+    long redNow = ((redOne * weight) / 255) + ((redTwo * (255 - weight)) / 255) ;
+    long greenNow = ((greenOne * weight) / 255) + ((greenTwo * (255 - weight)) / 255) ;
+    long blueNow = ((blueOne * weight) / 255) + ((blueTwo * (255 - weight)) / 255) ;
+
+    strip.setPixelColor(pixel, redNow, greenNow, blueNow);
+    strip.show();
 }
 
 void allLit(int R, int G, int B) {
