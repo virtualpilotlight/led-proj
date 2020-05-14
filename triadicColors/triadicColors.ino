@@ -37,21 +37,28 @@ class Colors {
   int green;
   int blue; 
 
+  //the public part of the class can get called outside of the class
   public:
   Colors(int r, int g, int b){
     red = r;
     green = g;
     blue = b; 
   }
+  
+  //when you need a color as an array
   void getColor(int outputColor[]){
     outputColor[0] = red;
     outputColor[1] = green;
     outputColor[2] = blue;
   }
+  
+  //sets individual pixel to a color and prints the RGB values to the Serial monitor, remove that? 
   void setColor (int pixel){
     strip.setPixelColor(pixel, red, green, blue);
     printColor();
   }
+  
+  //use for debugging line A prints readable, line B prints the varible
   void printColor(){
     Serial.print("red = ");
     Serial.print(red);
@@ -61,6 +68,8 @@ class Colors {
     Serial.print(blue);
     Serial.println(" ");
   }
+  
+  //weighted average of two colors
   Colors aveColor(Colors colorOne, Colors colorTwo, long weight){
     long redNow = ((colorOne.red * weight) / 255) + ((colorTwo.red * (255 - weight)) / 255) ;
     long greenNow = ((colorOne.green * weight) / 255) + ((colorTwo.green * (255 - weight)) / 255) ;
@@ -68,6 +77,24 @@ class Colors {
     Colors colorNow(redNow, greenNow, blueNow);
     return colorNow;
   }
+};
+
+class ColorSets {
+  Colors colorArray[3];  //would like to be able to have less or more colors in sets
+
+  // not compiling 
+  public:
+  ColorSets (Colors colorList[]){
+    
+  }
+};
+
+int allColorSets [5][3][3] = { 
+  { { 255, 0, 0}, { 255, 250, 0}, { 0, 0, 255} }, // Red, Yellow, Blue
+  { { 255, 69, 0}, { 173, 255, 47}, { 138, 43, 226} }, // Red-orange, yellow-green, blue violet
+  { { 255, 100, 0}, { 0, 128, 0}, { 148, 0, 211} }, // Orange, Green, Violet
+  { { 255, 215, 0}, { 32, 178, 170}, { 199, 21, 133} }, // yellow-orange, blue-green, Red-violet
+  { { 0, 0, 0}, { 0, 0, 0}, { 0, 0, 0} }  // no color 
 };
 
 void setup() {
@@ -83,11 +110,13 @@ void setup() {
   Serial.println("Hello Computer");  // prints to the serial to monitor to confirm setup is setting
   
 }
-
+//consider some additional class for time
 unsigned long timeSinceRando = millis();  // millis is the amount of milliseconds since the chip started running the current program, resets about every 50 days. 
 unsigned long altTime = millis();  // creats an unsigned long, a non negative number upto over 4 billion {0 to (2^32)-1}
 unsigned long ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
 
+
+//FIXME strip.show(); needs to be in loop only once, and removed from the individual functions 
 void loop() {
   // put your main code here, to run repeatedly:
 
@@ -95,7 +124,7 @@ void loop() {
 
   ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
 
-  int litPixels[]  = { 0, 1, 2, 3, 4, 5, 6, 7};             // [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
+  int litPixels[]  = { 0, 1, 2, 3, 4, 5, 6, 7};               // an array that holds the LEDs to be lit adjusted with NUM_LEDS
 
  
   if (ledClock > SPEED) {   // if ledClock is greater than speed re-random and resets the random clock
@@ -103,16 +132,18 @@ void loop() {
     timeSinceRando = altTime;    //  sets timeSinceRando to altTime
   }
 
+  // instances of the class Colors 
   Colors wildberry(25, 30, 200);
   Colors cherryblossom(200, 0, 25);
 
+  //for NUM_LEDS fade from wildberry to cherryblossom using the array litPixels with indisis i and offset of i*100
   for (int i = 0; i < NUM_LEDS; i++ ){
-    fadeSingle(litPixels[i], wildberry, cherryblossom, (i * 100) );
+    fadeSingle(litPixels[i], wildberry, cherryblossom, (i * 100) );    //fadeSingle has a strip.show rn, rm?
   }
 
-  //lightAll(wildberry);
 }
 
+//function that lights all the LEDs, LED_COUNT, to an instance of a Colors, includes strip show
 void lightAll(Colors ledColor) {
    Serial.print("light all");
    for (int i = 0; i <= LED_COUNT; i++){
@@ -145,6 +176,7 @@ bool dupePixels(int litPixels[]) {
   return false;
 }
 
+//previous version of fade probably needs to get yeeted. grabs colors from the array of colors 
 void fade(int litPixels[], int colorSet) {
   Serial.println("in fade");
   for (int i = 0; i < NUM_LEDS; i++) {       
@@ -178,57 +210,12 @@ void fade(int litPixels[], int colorSet) {
   }
 }
 
-void colorFade(int litPixels[], int firstColor, int secondColor){
-  Serial.println("in color fade");
-  for (int i = 0; i < NUM_LEDS; i++) {       
-
-    long red1 = allColorSets [firstColor][i % 3][0];         
-    long green1 = allColorSets [firstColor][i % 3][1];
-    long blue1 = allColorSets [firstColor][i  % 3][2];
-
-    long red2 = allColorSets [secondColor][i % 3][0];         
-    long green2 = allColorSets [secondColor][i % 3][1];
-    long blue2 = allColorSets [secondColor][i  % 3][2];
-
-    long weight = ( ledClock * (MAX_BRIGHT - 1))  / SPEED;
-
-    long redNow = ((red1 * weight) / 255) + ((red2 * (255 - weight)) / 255) ;
-    long greenNow = ((green1 * weight) / 255) + ((green2 * (255 - weight)) / 255) ;
-    long blueNow = ((blue1 * weight) / 255) + ((blue2 * (255 - weight)) / 255) ;
-
-    strip.setPixelColor(litPixels[i], redNow, greenNow, blueNow);
-    strip.show();
-  }
-  
-}
 
 void fadeSingle (int pixel, Colors colorOne, Colors colorTwo, int offset) {
   long clockWeight = (ledClock * 255) / SPEED;
   long weight = ( (clockWeight + offset) * 255 )  / SPEED;
-  Serial.print("weight = ");
-  Serial.println(weight);
   Colors newColor(0,0,0);
   newColor = newColor.aveColor(colorOne, colorTwo, weight);
   newColor.setColor(pixel); 
-  strip.show();
-}
-
-void singleFade(int pixel, int setOne, int colorOne, int setTwo, int colorTwo, int offset) {
-  
-  long redOne = allColorSets [setOne][colorOne][0];         
-  long greenOne = allColorSets [setOne][colorOne][1];
-  long blueOne = allColorSets [setOne][colorOne][2];
-
-  long redTwo = allColorSets [setTwo][colorTwo][0];         
-  long greenTwo = allColorSets [setTwo][colorTwo][1];
-  long blueTwo = allColorSets [setTwo][colorTwo][2];
-
-  long weight = ( (ledClock + offset) * (MAX_BRIGHT - 1) )  / SPEED;
-
-  long redNow = ((redOne * weight) / 255) + ((redTwo * (255 - weight)) / 255) ;
-  long greenNow = ((greenOne * weight) / 255) + ((greenTwo * (255 - weight)) / 255) ;
-  long blueNow = ((blueOne * weight) / 255) + ((blueTwo * (255 - weight)) / 255) ;
-
-  strip.setPixelColor(pixel, redNow, greenNow, blueNow);
   strip.show();
 }
