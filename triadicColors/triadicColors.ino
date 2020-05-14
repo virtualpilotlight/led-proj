@@ -20,6 +20,7 @@ int allColorSets [5][3][3] = {
   { { 0, 0, 0}, { 0, 0, 0}, { 0, 0, 0} }  // no color 
 };
 
+// these are const to specify the  indix of the color groups in allColorSets
 #define PRIMARY     0
 #define WILD        1
 #define SECONDARY   2
@@ -29,6 +30,45 @@ int allColorSets [5][3][3] = {
 #define MAX_BRIGHT  256
 
 #define SPEED       1000  // number of milliseconds for fade up and down, smaller is faster
+
+//the class Colors is set up to hold an RGB value
+class Colors {
+  int red;
+  int green;
+  int blue; 
+
+  public:
+  Colors(int r, int g, int b){
+    red = r;
+    green = g;
+    blue = b; 
+  }
+  void getColor(int outputColor[]){
+    outputColor[0] = red;
+    outputColor[1] = green;
+    outputColor[2] = blue;
+  }
+  void setColor (int pixel){
+    strip.setPixelColor(pixel, red, green, blue);
+    printColor();
+  }
+  void printColor(){
+    Serial.print("red = ");
+    Serial.print(red);
+    Serial.print(" green = ");
+    Serial.print(green);
+    Serial.print(" blue = ");
+    Serial.print(blue);
+    Serial.println(" ");
+  }
+  Colors aveColor(Colors colorOne, Colors colorTwo, long weight){
+    long redNow = ((colorOne.red * weight) / 255) + ((colorTwo.red * (255 - weight)) / 255) ;
+    long greenNow = ((colorOne.green * weight) / 255) + ((colorTwo.green * (255 - weight)) / 255) ;
+    long blueNow = ((colorOne.blue * weight) / 255) + ((colorTwo.blue * (255 - weight)) / 255) ;
+    Colors colorNow(redNow, greenNow, blueNow);
+    return colorNow;
+  }
+};
 
 void setup() {
   // put your setup code here, to run once:
@@ -57,31 +97,28 @@ void loop() {
 
   int litPixels[]  = { 0, 1, 2, 3, 4, 5, 6, 7};             // [NUM_LEDS];     // an array that holds the LEDs to be lit adjusted with NUM_LEDS
 
-  /* int randoColor;
-
-  if (ledClock > SPEED * 2) {   // if ledClock is greater than 5k re-random and resets the random clock
-
-    randomPixels(litPixels);    
-
-    while (dupePixels(litPixels) == true) {    // while dupePixels is true re-random
-      randomPixels(litPixels);
-    }
+ 
+  if (ledClock > SPEED) {   // if ledClock is greater than speed re-random and resets the random clock
     
     timeSinceRando = altTime;    //  sets timeSinceRando to altTime
-
-    randoColor = random(0, 4);  // randoColor gets a number 0 -3
   }
-  
-  fade(litPixels, randoColor);  // fade uses litPixels and randoColor to fade on and off
-  */
+
+  Colors wildberry(25, 30, 200);
+  Colors cherryblossom(200, 0, 25);
+
   for (int i = 0; i < NUM_LEDS; i++ ){
-    singleFade(litPixels[i], SECONDARY, 1, PASTEL, 2, (i * 100) );
+    fadeSingle(litPixels[i], wildberry, cherryblossom, (i * 100) );
   }
-  
-  
-  //colorFade(litPixels, PRIMARY, SECONDARY);
 
-  
+  //lightAll(wildberry);
+}
+
+void lightAll(Colors ledColor) {
+   Serial.print("light all");
+   for (int i = 0; i <= LED_COUNT; i++){
+    ledColor.setColor(i);
+  }
+  strip.show();
 }
 
 // gives litPixels a random of 0 to LED_COUNT with the index of i for NUM_LEDS
@@ -165,29 +202,33 @@ void colorFade(int litPixels[], int firstColor, int secondColor){
   
 }
 
+void fadeSingle (int pixel, Colors colorOne, Colors colorTwo, int offset) {
+  long clockWeight = (ledClock * 255) / SPEED;
+  long weight = ( (clockWeight + offset) * 255 )  / SPEED;
+  Serial.print("weight = ");
+  Serial.println(weight);
+  Colors newColor(0,0,0);
+  newColor = newColor.aveColor(colorOne, colorTwo, weight);
+  newColor.setColor(pixel); 
+  strip.show();
+}
+
 void singleFade(int pixel, int setOne, int colorOne, int setTwo, int colorTwo, int offset) {
   
   long redOne = allColorSets [setOne][colorOne][0];         
-    long greenOne = allColorSets [setOne][colorOne][1];
-    long blueOne = allColorSets [setOne][colorOne][2];
+  long greenOne = allColorSets [setOne][colorOne][1];
+  long blueOne = allColorSets [setOne][colorOne][2];
 
-    long redTwo = allColorSets [setTwo][colorTwo][0];         
-    long greenTwo = allColorSets [setTwo][colorTwo][1];
-    long blueTwo = allColorSets [setTwo][colorTwo][2];
+  long redTwo = allColorSets [setTwo][colorTwo][0];         
+  long greenTwo = allColorSets [setTwo][colorTwo][1];
+  long blueTwo = allColorSets [setTwo][colorTwo][2];
 
-    long weight = ( (ledClock + offset) * (MAX_BRIGHT - 1) )  / SPEED;
+  long weight = ( (ledClock + offset) * (MAX_BRIGHT - 1) )  / SPEED;
 
-    long redNow = ((redOne * weight) / 255) + ((redTwo * (255 - weight)) / 255) ;
-    long greenNow = ((greenOne * weight) / 255) + ((greenTwo * (255 - weight)) / 255) ;
-    long blueNow = ((blueOne * weight) / 255) + ((blueTwo * (255 - weight)) / 255) ;
+  long redNow = ((redOne * weight) / 255) + ((redTwo * (255 - weight)) / 255) ;
+  long greenNow = ((greenOne * weight) / 255) + ((greenTwo * (255 - weight)) / 255) ;
+  long blueNow = ((blueOne * weight) / 255) + ((blueTwo * (255 - weight)) / 255) ;
 
-    strip.setPixelColor(pixel, redNow, greenNow, blueNow);
-    strip.show();
-}
-
-void allLit(int R, int G, int B) {
-   for (int i = 0; i <= LED_COUNT; i++){
-    strip.setPixelColor(i, R, G, B);
-  }
+  strip.setPixelColor(pixel, redNow, greenNow, blueNow);
   strip.show();
 }
