@@ -44,6 +44,8 @@ class Colors {
     green = g;
     blue = b; 
   }
+
+  Colors(){}
   
   //when you need a color as an array
   void getColor(int outputColor[]){
@@ -69,7 +71,7 @@ class Colors {
     Serial.println(" ");
   }
   
-  //weighted average of two colors
+  //weighted average of two Colors
   Colors aveColor(Colors colorOne, Colors colorTwo, long weight){
     long redNow = ((colorOne.red * weight) / 255) + ((colorTwo.red * (255 - weight)) / 255) ;
     long greenNow = ((colorOne.green * weight) / 255) + ((colorTwo.green * (255 - weight)) / 255) ;
@@ -77,25 +79,67 @@ class Colors {
     Colors colorNow(redNow, greenNow, blueNow);
     return colorNow;
   }
+
+  Colors dimColor(Colors inputColor, int brightness) {
+      int n = brightness % MAX_BRIGHT;
+      Colors newColor(n, n, n);
+      return aveColor(newColor, inputColor, MAX_BRIGHT);
+    }
 };
 
 class ColorSets {
-  Colors colorArray[3];  //would like to be able to have less or more colors in sets
+  int numColors;
+  Colors colorArray[8];  //let's keep it to 8 or less Colors 
 
-  // not compiling 
+  // compiling 
   public:
-  ColorSets (Colors colorList[]){
-    
+  ColorSets (Colors colorList[], int nC){
+    numColors = nC;
+    for (int i = 0; i < numColors; i++){
+      colorArray[i] = colorList[i];
+    }
   }
+  
+  ColorSets(){}
+
+  Colors getColor (int index){
+    return colorArray[index];
+  }
+
 };
 
-int allColorSets [5][3][3] = { 
+Colors red (255, 0, 0);
+Colors yellow (255, 250, 0);
+Colors blue (0, 0, 255);
+
+Colors primary[]{
+  red, yellow, blue
+};
+
+ColorSets primarySet (primary, 3);
+
+Colors orange (255, 100, 0);
+Colors green (0, 128, 0);
+Colors violet (148, 0, 211);
+
+Colors secondary[]{
+  orange, green, violet
+};
+
+ColorSets secondarySets (secondary, 3);
+
+
+
+int allColorSetsDemo [5][3][3] = { 
   { { 255, 0, 0}, { 255, 250, 0}, { 0, 0, 255} }, // Red, Yellow, Blue
   { { 255, 69, 0}, { 173, 255, 47}, { 138, 43, 226} }, // Red-orange, yellow-green, blue violet
   { { 255, 100, 0}, { 0, 128, 0}, { 148, 0, 211} }, // Orange, Green, Violet
   { { 255, 215, 0}, { 32, 178, 170}, { 199, 21, 133} }, // yellow-orange, blue-green, Red-violet
   { { 0, 0, 0}, { 0, 0, 0}, { 0, 0, 0} }  // no color 
 };
+
+  Colors wildberry(25, 30, 200);
+  Colors cherryblossom(200, 0, 25);
 
 void setup() {
   // put your setup code here, to run once:
@@ -131,17 +175,36 @@ void loop() {
     
     timeSinceRando = altTime;    //  sets timeSinceRando to altTime
   }
-
-  // instances of the class Colors 
-  Colors wildberry(25, 30, 200);
-  Colors cherryblossom(200, 0, 25);
-
-  //for NUM_LEDS fade from wildberry to cherryblossom using the array litPixels with indisis i and offset of i*100
-  for (int i = 0; i < NUM_LEDS; i++ ){
-    fadeSingle(litPixels[i], wildberry, cherryblossom, (i * 100) );    //fadeSingle has a strip.show rn, rm?
-  }
-
+  newFade(litPixels, primarySet);
+  strip.show(); 
 }
+
+
+//FIXME not working? all white  previous version of fade probably needs to get yeeted. grabs colors from the array of colors 
+void newFade(int litPixels[], ColorSets fadeSet) {
+  Serial.println("in new fade");
+  for (int i = 0; i < NUM_LEDS; i++) {       
+
+    Colors thisColor = fadeSet.getColor(i % 3);
+
+    thisColor.printColor();
+
+    long brightness = ( ledClock * (MAX_BRIGHT - 1))  / SPEED;
+
+    if (ledClock < SPEED) {
+      int n = brightness % MAX_BRIGHT;
+      thisColor = thisColor.dimColor(thisColor, n);
+      //thisColor.printColor();
+      thisColor.setColor(i);
+    }
+    else{
+      int n = (MAX_BRIGHT - 1) - (brightness - (MAX_BRIGHT - 1)) % MAX_BRIGHT;
+      thisColor = thisColor.dimColor(thisColor, n);
+      thisColor.setColor(i);
+    }
+  }
+}
+
 
 //function that lights all the LEDs, LED_COUNT, to an instance of a Colors, includes strip show
 void lightAll(Colors ledColor) {
