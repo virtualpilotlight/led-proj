@@ -48,7 +48,7 @@ class Colors {
   Colors(){}
   
   //when you need a color as an array
-  void getColor(int outputColor[]){
+  void getColorArray(int outputColor[]){
     outputColor[0] = red;
     outputColor[1] = green;
     outputColor[2] = blue;
@@ -103,7 +103,8 @@ class ColorSets {
   ColorSets(){}
 
   Colors getColor (int index){
-    return colorArray[index];
+    Colors returnColor = colorArray[index];
+    return returnColor;
   }
 
 };
@@ -175,8 +176,10 @@ void loop() {
     
     timeSinceRando = altTime;    //  sets timeSinceRando to altTime
   }
+  
   newFade(litPixels, primarySet);
   strip.show(); 
+    
 }
 
 
@@ -185,7 +188,7 @@ void newFade(int litPixels[], ColorSets fadeSet) {
   Serial.println("in new fade");
   for (int i = 0; i < NUM_LEDS; i++) {       
 
-    Colors thisColor = fadeSet.getColor(i % 3);
+    Colors thisColor = fadeSet.getColor(2);
 
     thisColor.printColor();
 
@@ -195,12 +198,12 @@ void newFade(int litPixels[], ColorSets fadeSet) {
       int n = brightness % MAX_BRIGHT;
       thisColor = thisColor.dimColor(thisColor, n);
       //thisColor.printColor();
-      thisColor.setColor(i);
+      thisColor.setColor(litPixels[i]);
     }
     else{
       int n = (MAX_BRIGHT - 1) - (brightness - (MAX_BRIGHT - 1)) % MAX_BRIGHT;
       thisColor = thisColor.dimColor(thisColor, n);
-      thisColor.setColor(i);
+      thisColor.setColor(litPixels[i]);
     }
   }
 }
