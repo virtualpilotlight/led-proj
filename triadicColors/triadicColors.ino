@@ -154,7 +154,7 @@ int allColorSetsDemo [5][3][3] = {
     wildberry, cherryblossom
   };
 
-  ColorSets biTillIDiSet (biTillIDim 2);
+  ColorSets biTillIDiSet (biTillIDi, 2);
 
 void setup() {
   // put your setup code here, to run once:
@@ -179,23 +179,24 @@ unsigned long ledClock = altTime - timeSinceRando;  // ledClock is the differanc
 void loop() {
   // put your main code here, to run repeatedly:
 
+  timingFunc();
+  
+  int litPixels[]  = { 0, 1, 2, 3, 4, 5, 6, 7};               // an array that holds the LEDs to be lit adjusted with NUM_LEDS
+  
+  for (int i = 0; i < NUM_LEDS; i++){
+    fadeSingle(litPixels[i], wildberry, cherryblossom, i * 100 );
+  }    
+}
+
+void timingFunc(){
   altTime = millis();  // time is assigned millis
 
   ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
-
-  int litPixels[]  = { 0, 1, 2, 3, 4, 5, 6, 7};               // an array that holds the LEDs to be lit adjusted with NUM_LEDS
-
  
   if (ledClock > SPEED) {   // if ledClock is greater than speed re-random and resets the random clock
-    
     timeSinceRando = altTime;    //  sets timeSinceRando to altTime
   }
-  
-  newFade(litPixels, primarySet);
-  strip.show(); 
-    
 }
-
 
 
 /*FIXME not working? all white  previous version of fade probably needs to get yeeted. 
