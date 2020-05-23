@@ -80,6 +80,7 @@ class Colors {
     return colorNow;
   }
 
+  //FIX ME range for brightness? - uses aveColor to lower the brightness
   Colors dimColor(Colors inputColor, int brightness) {
       int n = brightness % MAX_BRIGHT;
       Colors newColor(n, n, n);
@@ -87,14 +88,18 @@ class Colors {
     }
 };
 
+
+// FIX ME ColorSets is a class to deal with sets of no more than 8 instances of Colors. not sure if the class is having issues or if its just the newFade function
 class ColorSets {
-  int numColors;
+  int numColors;  //an int to indicate number of colors, is this needed?
   Colors colorArray[8];  //let's keep it to 8 or less Colors 
 
   // compiling 
   public:
+
+  //ColorSets takes a Colors array of nC number of colors Colors instances   
   ColorSets (Colors colorList[], int nC){
-    numColors = nC;
+    numColors = nC;  //is this line necessary? why not just use nC in the for loop?
     for (int i = 0; i < numColors; i++){
       colorArray[i] = colorList[i];
     }
@@ -102,6 +107,7 @@ class ColorSets {
   
   ColorSets(){}
 
+// FIX ME - is this correct? since the class is ColorSets or is this a Colors called getColor? - getColor gets a Colors from colorArray at the index of index and returns the Colors returnColor
   Colors getColor (int index){
     Colors returnColor = colorArray[index];
     return returnColor;
@@ -109,6 +115,7 @@ class ColorSets {
 
 };
 
+//this uses instances of the classes Colors and ColorSets. By creating an instance of Colors that stores the RGV value of a color, and placing those in a Colors array and placing that array in a ColorSet with the int for total colors in the array
 Colors red (255, 0, 0);
 Colors yellow (255, 250, 0);
 Colors blue (0, 0, 255);
@@ -130,7 +137,7 @@ Colors secondary[]{
 ColorSets secondarySets (secondary, 3);
 
 
-
+//FIX ME duped for constructing ColorSets with the already created colors  
 int allColorSetsDemo [5][3][3] = { 
   { { 255, 0, 0}, { 255, 250, 0}, { 0, 0, 255} }, // Red, Yellow, Blue
   { { 255, 69, 0}, { 173, 255, 47}, { 138, 43, 226} }, // Red-orange, yellow-green, blue violet
@@ -139,8 +146,15 @@ int allColorSetsDemo [5][3][3] = {
   { { 0, 0, 0}, { 0, 0, 0}, { 0, 0, 0} }  // no color 
 };
 
+//additional custom colors
   Colors wildberry(25, 30, 200);
   Colors cherryblossom(200, 0, 25);
+
+  Colors biTillIDi[]{
+    wildberry, cherryblossom
+  };
+
+  ColorSets biTillIDiSet (biTillIDim 2);
 
 void setup() {
   // put your setup code here, to run once:
@@ -183,12 +197,17 @@ void loop() {
 }
 
 
-//FIXME not working? all white  previous version of fade probably needs to get yeeted. grabs colors from the array of colors 
+
+/*FIXME not working? all white  previous version of fade probably needs to get yeeted. 
+ * newFade takes the array litPixels as an int and an instance of ColorSets called fadeSet
+ * for the number of LEDs 
+ * 
+ */
 void newFade(int litPixels[], ColorSets fadeSet) {
   Serial.println("in new fade");
   for (int i = 0; i < NUM_LEDS; i++) {       
 
-    Colors thisColor = fadeSet.getColor(2);
+    Colors thisColor = fadeSet.getColor(2);  //
 
     thisColor.printColor();
 
