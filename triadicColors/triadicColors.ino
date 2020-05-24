@@ -94,7 +94,6 @@ class ColorSets {
   int numColors;  //an int to indicate number of colors, is this needed?
   Colors colorArray[8];  //let's keep it to 8 or less Colors 
 
-  // compiling 
   public:
 
   //ColorSets takes a Colors array of nC number of colors Colors instances   
@@ -113,6 +112,32 @@ class ColorSets {
     return returnColor;
   }
 
+};
+
+class Timing {
+  unsigned long timeSinceRando;   
+  unsigned long altTime;  
+  unsigned long ledClock;  
+  
+  public:
+
+  Timing timingSetup(){
+    unsigned long timeSinceRando = millis();  // millis is the amount of milliseconds since the chip started running the current program, resets about every 50 days. 
+    unsigned long altTime = millis();  // creats an unsigned long, a non negative number upto over 4 billion {0 to (2^32)-1}
+    unsigned long ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
+  }
+
+
+  timingFunc(){
+    altTime = millis();  // time is assigned millis
+
+    ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
+ 
+    if (ledClock > SPEED) {   // if ledClock is greater than speed re-random and resets the random clock
+    timeSinceRando = altTime;    //  sets timeSinceRando to altTime
+    }
+  }
+  
 };
 
 //this uses instances of the classes Colors and ColorSets. By creating an instance of Colors that stores the RGV value of a color, and placing those in a Colors array and placing that array in a ColorSet with the int for total colors in the array
@@ -158,6 +183,9 @@ int allColorSetsDemo [5][3][3] = {
 
 void setup() {
   // put your setup code here, to run once:
+  
+  timingSetup();
+  
   strip.begin();              // turn the strip on
   strip.show();               // show the strip
   strip.setBrightness(25);    // set or limit brightness
@@ -169,10 +197,7 @@ void setup() {
   Serial.println("Hello Computer");  // prints to the serial to monitor to confirm setup is setting
   
 }
-//consider some additional class for time
-unsigned long timeSinceRando = millis();  // millis is the amount of milliseconds since the chip started running the current program, resets about every 50 days. 
-unsigned long altTime = millis();  // creats an unsigned long, a non negative number upto over 4 billion {0 to (2^32)-1}
-unsigned long ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
+
 
 
 //FIXME strip.show(); needs to be in loop only once, and removed from the individual functions 
@@ -186,16 +211,6 @@ void loop() {
   for (int i = 0; i < NUM_LEDS; i++){
     fadeSingle(litPixels[i], wildberry, cherryblossom, i * 100 );
   }    
-}
-
-void timingFunc(){
-  altTime = millis();  // time is assigned millis
-
-  ledClock = altTime - timeSinceRando;  // ledClock is the differance in milliseconds of time and timeSinceRando
- 
-  if (ledClock > SPEED) {   // if ledClock is greater than speed re-random and resets the random clock
-    timeSinceRando = altTime;    //  sets timeSinceRando to altTime
-  }
 }
 
 
